@@ -435,14 +435,11 @@ Endereço atual: ${window.location.href}`;
       // Build contents for multi-turn
       const contents = [];
 
-      // Inject system as first user message (Gemini doesn't have system role in all models the same way)
-      // Better approach: use systemInstruction when available
       contents.push({
         role: 'user',
         parts: [{ text: `[SYSTEM INSTRUCTION — OBEDECER SEMPRE]\n${systemPrompt}\n\n[MENSAGEM DO MESTRE]\n${userText}` }]
       });
 
-      // Add previous turns (limited context window)
       const recent = conversationHistory.slice(-10);
       for (const turn of recent) {
         contents.push({
@@ -451,10 +448,8 @@ Endereço atual: ${window.location.href}`;
         });
       }
 
-      // Re-add current user message cleanly at the end if history exists
       if (recent.length > 0) {
         contents.length = 0;
-        // Put system instruction once
         contents.push({
           role: 'user',
           parts: [{ text: `[SYSTEM INSTRUCTION — OBEDECER SEMPRE]\n${systemPrompt}` }]
@@ -475,7 +470,7 @@ Endereço atual: ${window.location.href}`;
         });
       }
 
-      const model = 'gemini-2.0-flash'; // fast + capable. Change to gemini-2.5-flash / gemini-1.5-pro if preferred
+      const model = 'gemini-3.8-flash';
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
       const body = {
@@ -543,7 +538,6 @@ Endereço atual: ${window.location.href}`;
         addMessage('model', errorMsg);
 
         if (/API key|invalid|403|401/i.test(err.message)) {
-          // Key problem → open modal
           setTimeout(openApiModal, 600);
         }
       }
@@ -568,7 +562,6 @@ Endereço atual: ${window.location.href}`;
     userInput.addEventListener('input', () => autoResize(userInput));
     window.addEventListener('load', () => setTimeout(() => userInput.focus(), 200));
 
-    // Close modal on Escape
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape') closeApiModal();
     });
